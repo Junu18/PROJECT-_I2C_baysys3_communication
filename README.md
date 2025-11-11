@@ -22,10 +22,8 @@ Basys3 FPGA 보드를 사용한 I2C 통신 프로젝트입니다.
 ├── docs/                   # 문서
 │   └── spec.md            # 상세 스펙
 ├── rtl/                   # RTL 소스
-│   ├── i2c_master.sv      # I2C Master
-│   ├── i2c_slave.sv       # I2C Slave (TODO)
-│   └── common/
-│       └── i2c_pkg.sv     # 공통 패키지
+│   ├── i2c_master.sv      # I2C Master (단일 파일)
+│   └── i2c_slave.sv       # I2C Slave (TODO)
 ├── tb/                    # 테스트벤치
 │   └── i2c_master_tb.sv   # Master TB
 ├── constraints/           # XDC 제약 파일
@@ -52,7 +50,6 @@ Basys3 FPGA 보드를 사용한 I2C 통신 프로젝트입니다.
 # Master 테스트벤치 실행
 cd tb/
 iverilog -g2012 -o i2c_master_tb.out \
-    ../rtl/common/i2c_pkg.sv \
     ../rtl/i2c_master.sv \
     i2c_master_tb.sv
 vvp i2c_master_tb.out

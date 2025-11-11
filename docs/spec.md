@@ -102,10 +102,8 @@ i2c_project/
 │   └── register_map.md
 │
 ├── rtl/
-│   ├── i2c_master.sv               ← I2C Master 구현
-│   ├── i2c_slave.sv                ← I2C Slave 구현 (TODO)
-│   └── common/
-│       └── i2c_pkg.sv              ← 공통 파라미터 정의
+│   ├── i2c_master.sv               ← I2C Master 구현 (단일 파일)
+│   └── i2c_slave.sv                ← I2C Slave 구현 (TODO)
 │
 ├── tb/
 │   ├── i2c_master_tb.sv            ← Master 테스트벤치
@@ -128,8 +126,8 @@ i2c_project/
 ## 7. 구현 상태
 
 ### ✅ 완료:
-- [x] i2c_pkg.sv - 공통 파라미터 정의
-- [x] i2c_master.sv - 완전한 I2C Master 구현
+- [x] i2c_master.sv - 완전한 I2C Master 구현 (단일 파일, 패키지 의존성 없음)
+  - [x] 모든 파라미터와 타입 정의 내부 포함
   - [x] START 조건 생성
   - [x] ADDRESS + R/W 비트 전송
   - [x] ACK/NACK 수신

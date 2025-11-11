@@ -10,8 +10,6 @@
 //  4. Timing verification (100 kHz SCL)
 //==============================================================================
 
-import i2c_pkg::*;
-
 module i2c_master_tb;
 
     //==========================================================================
@@ -19,6 +17,11 @@ module i2c_master_tb;
     //==========================================================================
     localparam CLK_PERIOD = 10;  // 100 MHz clock = 10 ns period
     localparam I2C_PERIOD = 10_000;  // 100 kHz I2C = 10 us period
+
+    // I2C Parameters (same as in i2c_master)
+    localparam logic [6:0] SLAVE_ADDR = 7'b1010101;  // 0x55
+    localparam logic I2C_WRITE = 1'b0;
+    localparam logic I2C_READ  = 1'b1;
 
     //==========================================================================
     // Signals
