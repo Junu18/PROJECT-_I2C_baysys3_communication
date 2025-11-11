@@ -23,9 +23,10 @@ Basys3 FPGA 보드를 사용한 I2C 통신 프로젝트입니다.
 │   └── spec.md            # 상세 스펙
 ├── rtl/                   # RTL 소스
 │   ├── i2c_master.sv      # I2C Master (단일 파일)
-│   └── i2c_slave.sv       # I2C Slave (TODO)
+│   └── i2c_slave.sv       # I2C Slave (단일 파일)
 ├── tb/                    # 테스트벤치
-│   └── i2c_master_tb.sv   # Master TB
+│   ├── i2c_master_tb.sv   # Master TB
+│   └── i2c_system_tb.sv   # Master + Slave 통합 TB
 ├── constraints/           # XDC 제약 파일
 │   ├── basys3_i2c_master.xdc
 │   └── basys3_i2c_slave.xdc
@@ -47,22 +48,32 @@ Basys3 FPGA 보드를 사용한 I2C 통신 프로젝트입니다.
 ## 시뮬레이션 실행
 
 ```bash
-# Master 테스트벤치 실행
+# Master 단독 테스트
 cd tb/
 iverilog -g2012 -o i2c_master_tb.out \
     ../rtl/i2c_master.sv \
     i2c_master_tb.sv
 vvp i2c_master_tb.out
 gtkwave i2c_master_tb.vcd
+
+# Master + Slave 통합 테스트
+iverilog -g2012 -o i2c_system_tb.out \
+    ../rtl/i2c_master.sv \
+    ../rtl/i2c_slave.sv \
+    i2c_system_tb.sv
+vvp i2c_system_tb.out
+gtkwave i2c_system_tb.vcd
 ```
 
 ## 구현 상태
 
-- ✅ I2C Master 구현 완료
+- ✅ I2C Master 구현 완료 (단일 파일, 패키지 의존성 없음)
+- ✅ I2C Slave 구현 완료 (단일 파일, 패키지 의존성 없음)
 - ✅ Master 테스트벤치 완료
-- ✅ 제약 파일 작성 완료
-- 🔄 I2C Slave 구현 중
-- 📋 통합 테스트 예정
+- ✅ Master + Slave 통합 테스트벤치 완료
+- ✅ 제약 파일 작성 완료 (Master, Slave)
+- 📋 Vivado 프로젝트 생성 예정
+- 📋 하드웨어 검증 예정
 
 ## 참고 문서
 

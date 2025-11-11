@@ -139,17 +139,24 @@ i2c_project/
 - [x] basys3_i2c_slave.xdc - Slave 제약 파일
 - [x] i2c_master_tb.sv - Master 테스트벤치
 
-### 🔄 진행 중:
-- [ ] i2c_slave.sv - I2C Slave 구현
+- [x] i2c_slave.sv - 완전한 I2C Slave 구현 (단일 파일, 패키지 의존성 없음)
+  - [x] 모든 파라미터와 타입 정의 내부 포함
+  - [x] START/STOP 조건 감지
+  - [x] ADDRESS 수신 및 매칭 (0x55)
+  - [x] ACK 전송
+  - [x] DATA 송신/수신
+  - [x] SCL/SDA 동기화 및 edge detection
+  - [x] SDA tri-state 제어
+- [x] i2c_system_tb.sv - Master + Slave 통합 테스트벤치
 
 ### 📋 TODO:
-- [ ] i2c_slave_tb.sv - Slave 테스트벤치
-- [ ] i2c_system_tb.sv - 통합 테스트
-- [ ] Vivado 프로젝트 생성
-- [ ] 하드웨어 검증
+- [ ] Vivado 프로젝트 생성 (Master, Slave)
+- [ ] 비트스트림 생성
+- [ ] 하드웨어 검증 (두 Basys3 보드 연결)
 
-## 8. 주요 개선 사항
+## 8. 주요 구현 사항
 
+### I2C Master 개선
 원래 코드의 문제점들을 다음과 같이 해결했습니다:
 
 1. **✅ Slave ADDRESS 전송 추가**: 0x55 주소 + R/W 비트를 정확히 전송
@@ -160,24 +167,41 @@ i2c_project/
 6. **✅ 인터페이스 개선**: 명확한 제어 신호와 상태 피드백
 7. **✅ 4-phase SCL 생성**: 각 비트를 4개의 quarter로 나누어 정확한 타이밍 구현
 
+### I2C Slave 구현
+완전히 새로 구현한 기능들:
+
+1. **✅ START/STOP 감지**: SDA edge detection을 통한 조건 감지
+2. **✅ SCL/SDA 동기화**: 3-stage 동기화로 metastability 방지
+3. **✅ Edge Detection**: SCL rising/falling edge 정확히 감지
+4. **✅ 주소 매칭**: 7-bit 주소 수신 및 비교 (0x55)
+5. **✅ ACK 생성**: 주소 및 데이터에 대한 ACK 자동 전송
+6. **✅ Write 모드**: Master로부터 데이터 수신
+7. **✅ Read 모드**: Master에게 데이터 송신
+8. **✅ 단일 파일**: 패키지 의존성 없는 독립적 구현
+
 ## 9. 다음 단계
 
-### Phase 1: I2C Slave 구현
-1. i2c_slave.sv 설계
-2. 타이밍 다이어그램 기반 FSM 구현
-3. Testbench 작성 및 검증
+### ✅ Phase 1: I2C Master 구현 (완료)
+1. ✅ i2c_master.sv 설계 및 구현
+2. ✅ 타이밍 다이어그램 기반 FSM 구현
+3. ✅ Testbench 작성 및 검증
 
-### Phase 2: 통합 테스트
-1. Master-Slave 통합 테스트벤치
-2. 시뮬레이션 검증
-3. 타이밍 검증
+### ✅ Phase 2: I2C Slave 구현 (완료)
+1. ✅ i2c_slave.sv 설계 및 구현
+2. ✅ START/STOP 조건 감지
+3. ✅ 주소 매칭 및 ACK 처리
 
-### Phase 3: 하드웨어 구현
+### ✅ Phase 3: 통합 테스트 (완료)
+1. ✅ Master-Slave 통합 테스트벤치
+2. ✅ 시뮬레이션 검증
+3. ✅ Write/Read 동작 검증
+
+### 🔄 Phase 4: 하드웨어 구현 (진행 예정)
 1. Vivado 프로젝트 생성
 2. 합성 및 구현
 3. 비트스트림 생성
 
-### Phase 4: 하드웨어 검증
+### Phase 5: 하드웨어 검증
 1. 두 Basys3 보드 연결
 2. 데이터 전송 테스트
 3. 오실로스코프로 신호 확인
