@@ -11,8 +11,6 @@
 //  - Tri-state SDA control
 //==============================================================================
 
-import i2c_pkg::*;
-
 module i2c_master (
     // Global Signals
     input  logic        clk,            // 100 MHz system clock
@@ -40,6 +38,50 @@ module i2c_master (
     output logic        debug_sda_out,  // SDA output value
     output logic        debug_sda_oe    // SDA output enable
 );
+
+    //==========================================================================
+    // Parameters
+    //==========================================================================
+    localparam int CLK_FREQ    = 100_000_000;  // 100 MHz system clock
+    localparam int SCL_FREQ    = 100_000;      // 100 kHz I2C SCL
+    localparam int CLK_PER_BIT = CLK_FREQ / (SCL_FREQ * 4);  // 250 cycles per quarter bit
+    localparam int HALF_PERIOD = CLK_PER_BIT * 2;            // 500 cycles for half SCL period
+
+    // I2C Commands
+    localparam logic I2C_WRITE = 1'b0;
+    localparam logic I2C_READ  = 1'b1;
+
+    // State Encoding
+    typedef enum logic [4:0] {
+        IDLE       = 5'd0,
+        // Start Condition
+        START_1    = 5'd1,   // SDA high, SCL high (setup)
+        START_2    = 5'd2,   // SDA low, SCL high (start condition)
+        START_3    = 5'd3,   // SDA low, SCL low (prepare for data)
+        // Address Phase (7-bit addr + 1-bit R/W)
+        ADDR_BIT   = 5'd4,   // Transmit address bits
+        ADDR_ACK   = 5'd5,   // Wait for address ACK from slave
+        // Data Phase
+        DATA_BIT   = 5'd6,   // Transmit/Receive data bits
+        DATA_ACK   = 5'd7,   // ACK for data byte
+        // Master ACK (for read operations)
+        MACK       = 5'd8,   // Master sends ACK/NACK
+        // Stop Condition
+        STOP_1     = 5'd9,   // SDA low, SCL low
+        STOP_2     = 5'd10,  // SDA low, SCL high
+        STOP_3     = 5'd11,  // SDA high, SCL high (stop condition)
+        // Error/Done
+        DONE       = 5'd12,
+        ERROR      = 5'd13
+    } i2c_state_t;
+
+    // SCL Clock States (sub-states for timing)
+    typedef enum logic [1:0] {
+        SCL_LOW_1  = 2'd0,   // First half of SCL low
+        SCL_LOW_2  = 2'd1,   // Second half of SCL low
+        SCL_HIGH_1 = 2'd2,   // First half of SCL high
+        SCL_HIGH_2 = 2'd3    // Second half of SCL high
+    } scl_phase_t;
 
     //==========================================================================
     // Internal Signals
