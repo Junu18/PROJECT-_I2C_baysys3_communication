@@ -21,15 +21,9 @@ module i2c_master_board (
     output logic [7:0]  rx_data,
 
     // I2C Bus (PMOD pins JA1, JA2)
-    inout  wire         sda,
-    inout  wire         scl
+    inout  tri1         sda,
+    inout  tri1         scl
 );
-
-    //==========================================================================
-    // I2C Master signals
-    //==========================================================================
-    logic sda_in, sda_out, sda_oe;
-    logic scl_out, scl_oe;
 
     //==========================================================================
     // I2C Master Instance
@@ -41,22 +35,19 @@ module i2c_master_board (
         .slave_addr (slave_addr),
         .rw_bit     (rw_bit),
         .tx_data    (tx_data),
-        .sda_in     (sda_in),
-        .sda_out    (sda_out),
-        .sda_oe     (sda_oe),
-        .scl_out    (scl_out),
-        .scl_oe     (scl_oe),
         .busy       (busy),
         .done       (done),
         .ack_error  (ack_error),
-        .rx_data    (rx_data)
+        .rx_data    (rx_data),
+        .sda        (sda),
+        .scl        (scl),
+        // Debug ports (not connected)
+        .debug_busy    (),
+        .debug_ack     (),
+        .debug_state   (),
+        .debug_scl     (),
+        .debug_sda_out (),
+        .debug_sda_oe  ()
     );
-
-    //==========================================================================
-    // Tri-state I2C Bus (PMOD connection)
-    //==========================================================================
-    assign sda    = sda_oe ? sda_out : 1'bz;
-    assign scl    = scl_oe ? scl_out : 1'bz;
-    assign sda_in = sda;
 
 endmodule
