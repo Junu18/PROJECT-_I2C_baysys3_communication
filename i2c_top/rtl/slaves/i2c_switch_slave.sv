@@ -199,8 +199,11 @@ module i2c_switch_slave (
                             state_next = DEV_ADDR_ACK;
 
                             // Check address match (Read only for Switch)
-                            if ({dev_addr_reg[6:0], sda_in}[7:1] == SLAVE_ADDR &&
-                                {dev_addr_reg[6:0], sda_in}[0] == 1'b1) begin
+                            // Use intermediate variable for Vivado XSim compatibility
+                            logic [7:0] received_addr;
+                            received_addr = {dev_addr_reg[6:0], sda_in};
+                            if (received_addr[7:1] == SLAVE_ADDR &&
+                                received_addr[0] == 1'b1) begin
                                 addr_match_next = 1'b1;
                             end else begin
                                 addr_match_next = 1'b0;
