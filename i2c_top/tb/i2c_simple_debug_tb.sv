@@ -77,30 +77,34 @@ module i2c_simple_debug_tb;
     end
 
     //==========================================================================
-    // Debug Monitor
+    // Debug Monitor (Address Match Only)
     //==========================================================================
-    always @(posedge clk) begin
-        if (debug_addr_match_led)
-            $display("[%0t] *** LED SLAVE ADDRESSED ***", $time);
-        if (debug_addr_match_fnd)
-            $display("[%0t] *** FND SLAVE ADDRESSED ***", $time);
-        if (debug_addr_match_sw)
-            $display("[%0t] *** SWITCH SLAVE ADDRESSED ***", $time);
-    end
+    logic prev_addr_match_led, prev_addr_match_fnd, prev_addr_match_sw;
 
-    // State monitor
     always @(posedge clk) begin
-        if (debug_led_state != 0)
-            $display("[%0t] LED State: %0d", $time, debug_led_state);
+        prev_addr_match_led <= debug_addr_match_led;
+        prev_addr_match_fnd <= debug_addr_match_fnd;
+        prev_addr_match_sw  <= debug_addr_match_sw;
+
+        // Only print on rising edge of addr_match
+        if (debug_addr_match_led && !prev_addr_match_led)
+            $display("  [DEBUG] LED SLAVE ADDRESSED");
+        if (debug_addr_match_fnd && !prev_addr_match_fnd)
+            $display("  [DEBUG] FND SLAVE ADDRESSED");
+        if (debug_addr_match_sw && !prev_addr_match_sw)
+            $display("  [DEBUG] SWITCH SLAVE ADDRESSED");
     end
 
     //==========================================================================
     // Test Sequence
     //==========================================================================
+    int test_pass = 0;
+    int test_fail = 0;
+
     initial begin
         $display("========================================");
         $display("Simple I2C Debug Testbench");
-        $display("========================================");
+        $display("========================================\n");
 
         // Initialize
         rst_n = 0;
@@ -112,13 +116,12 @@ module i2c_simple_debug_tb;
 
         repeat(10) @(posedge clk);
         rst_n = 1;
-        $display("[%0t] Reset released", $time);
         repeat(10) @(posedge clk);
 
         //======================================================================
         // Test 1: Write to LED Slave (0x55)
         //======================================================================
-        $display("\n[%0t] === Test 1: Write 0xFF to LED (0x55) ===", $time);
+        $display("Test 1: Write 0xFF to LED (0x55)");
 
         slave_addr = 7'h55;
         tx_data = 8'hFF;
@@ -126,33 +129,27 @@ module i2c_simple_debug_tb;
 
         @(posedge clk);
         start = 1;
-        $display("[%0t] Start pulse", $time);
         @(posedge clk);
         start = 0;
 
         // Wait for done
-        $display("[%0t] Waiting for done...", $time);
         wait(done == 1);
-        $display("[%0t] Done signal received", $time);
         @(posedge clk);
 
-        $display("[%0t] Results:", $time);
-        $display("  LED = 0x%02h (expected 0xFF)", LED);
-        $display("  ACK error = %b (expected 0)", ack_error);
-        $display("  debug_addr_match_led = %b", debug_addr_match_led);
-
         if (LED == 8'hFF && !ack_error) begin
-            $display("  ✓ TEST PASSED!");
+            $display("  ✓ PASS: LED=0x%02h, ACK error=%b\n", LED, ack_error);
+            test_pass++;
         end else begin
-            $display("  ✗ TEST FAILED!");
+            $display("  ✗ FAIL: LED=0x%02h (expected 0xFF), ACK error=%b\n", LED, ack_error);
+            test_fail++;
         end
 
-        repeat(100) @(posedge clk);
+        repeat(50) @(posedge clk);
 
         //======================================================================
         // Test 2: Write to FND Slave (0x56)
         //======================================================================
-        $display("\n[%0t] === Test 2: Write 0x05 to FND (0x56) ===", $time);
+        $display("Test 2: Write 0x05 to FND (0x56)");
 
         slave_addr = 7'h56;
         tx_data = 8'h05;
@@ -166,23 +163,20 @@ module i2c_simple_debug_tb;
         wait(done == 1);
         @(posedge clk);
 
-        $display("[%0t] Results:", $time);
-        $display("  SEG = 7'b%07b (expected 7'b0010010)", SEG);
-        $display("  ACK error = %b (expected 0)", ack_error);
-        $display("  debug_addr_match_fnd = %b", debug_addr_match_fnd);
-
         if (SEG == 7'b0010010 && !ack_error) begin
-            $display("  ✓ TEST PASSED!");
+            $display("  ✓ PASS: SEG=7'b%07b, ACK error=%b\n", SEG, ack_error);
+            test_pass++;
         end else begin
-            $display("  ✗ TEST FAILED!");
+            $display("  ✗ FAIL: SEG=7'b%07b (expected 7'b0010010), ACK error=%b\n", SEG, ack_error);
+            test_fail++;
         end
 
-        repeat(100) @(posedge clk);
+        repeat(50) @(posedge clk);
 
         //======================================================================
         // Test 3: Read from Switch Slave (0x57)
         //======================================================================
-        $display("\n[%0t] === Test 3: Read from Switch (0x57) ===", $time);
+        $display("Test 3: Read from Switch (0x57)");
 
         SW = 8'hCD;
         slave_addr = 7'h57;
@@ -196,23 +190,20 @@ module i2c_simple_debug_tb;
         wait(done == 1);
         @(posedge clk);
 
-        $display("[%0t] Results:", $time);
-        $display("  rx_data = 0x%02h (expected 0xCD)", rx_data);
-        $display("  ACK error = %b (expected 0)", ack_error);
-        $display("  debug_addr_match_sw = %b", debug_addr_match_sw);
-
         if (rx_data == 8'hCD && !ack_error) begin
-            $display("  ✓ TEST PASSED!");
+            $display("  ✓ PASS: rx_data=0x%02h, ACK error=%b\n", rx_data, ack_error);
+            test_pass++;
         end else begin
-            $display("  ✗ TEST FAILED!");
+            $display("  ✗ FAIL: rx_data=0x%02h (expected 0xCD), ACK error=%b\n", rx_data, ack_error);
+            test_fail++;
         end
 
-        repeat(100) @(posedge clk);
+        repeat(50) @(posedge clk);
 
         //======================================================================
         // Test 4: Invalid Address
         //======================================================================
-        $display("\n[%0t] === Test 4: Invalid Address (0x99) ===", $time);
+        $display("Test 4: Invalid Address (0x99)");
 
         slave_addr = 7'h99;
         tx_data = 8'hFF;
@@ -226,23 +217,30 @@ module i2c_simple_debug_tb;
         wait(done == 1);
         @(posedge clk);
 
-        $display("[%0t] Results:", $time);
-        $display("  ACK error = %b (expected 1)", ack_error);
-
         if (ack_error) begin
-            $display("  ✓ TEST PASSED!");
+            $display("  ✓ PASS: ACK error=%b (correctly detected)\n", ack_error);
+            test_pass++;
         end else begin
-            $display("  ✗ TEST FAILED!");
+            $display("  ✗ FAIL: ACK error=%b (should be 1)\n", ack_error);
+            test_fail++;
         end
 
-        repeat(100) @(posedge clk);
+        repeat(50) @(posedge clk);
 
         //======================================================================
         // Summary
         //======================================================================
-        $display("\n========================================");
-        $display("Debug Tests Complete");
         $display("========================================");
+        $display("FINAL RESULTS:");
+        $display("  PASSED: %0d/4", test_pass);
+        $display("  FAILED: %0d/4", test_fail);
+        $display("========================================");
+
+        if (test_fail == 0) begin
+            $display("✓ ALL TESTS PASSED!\n");
+        end else begin
+            $display("✗ SOME TESTS FAILED!\n");
+        end
 
         $finish;
     end
