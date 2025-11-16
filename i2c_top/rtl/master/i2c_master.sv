@@ -206,13 +206,13 @@ module i2c_master (
                 sda_out_next   = 1'b1;
                 sda_oe_next    = 1'b1;
                 clk_count_next = 10'd0;
-                ack_error_next = 1'b0;
                 done_next      = 1'b0;
 
                 if (start) begin
                     // Load data for transmission
                     tx_shift_next  = tx_data;
                     bit_count_next = 3'd0;
+                    ack_error_next = 1'b0;  // Clear ack_error only when starting new transaction
                     state_next     = START_1;
                 end
             end
