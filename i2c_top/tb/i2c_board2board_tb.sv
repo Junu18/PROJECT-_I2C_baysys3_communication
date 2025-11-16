@@ -177,7 +177,7 @@ module i2c_board2board_tb;
         slave_sw = 8'h12;
         repeat(5) @(posedge clk);
         master_read(7'h57);
-        if (slave_led == 8'hAA && slave_seg == 7'b0001000 && master_rx_data == 8'h12 && !master_ack_error)
+        if (slave_led == 8'hAA && slave_seg == 7'b0001110 && master_rx_data == 8'h12 && !master_ack_error)
             begin pass_count++; $display("  ✓ PASS\n"); end
         else
             begin fail_count++; $display("  ✗ FAIL (LED=0x%0h, SEG=0b%07b, rx_data=0x%0h, ack_error=%0b)\n",
@@ -202,10 +202,10 @@ module i2c_board2board_tb;
         for (int i = 0; i < 16; i++) begin
             master_write(7'h56, i);
         end
-        if (slave_seg == 7'b0001000 && !master_ack_error)  // F = 0b0001000
+        if (slave_seg == 7'b0001110 && !master_ack_error)  // F = 0b0001110
             begin pass_count++; $display("  ✓ PASS\n"); end
         else
-            begin fail_count++; $display("  ✗ FAIL (SEG=0b%07b, expected=0b0001000)\n", slave_seg); end
+            begin fail_count++; $display("  ✗ FAIL (SEG=0b%07b, expected=0b0001110)\n", slave_seg); end
 
         //======================================================================
         // Test 7: Switch → LED Copy
