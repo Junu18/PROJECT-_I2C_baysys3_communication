@@ -24,71 +24,46 @@ module i2c_slave_board (
 );
 
     //==========================================================================
-    // I2C Bus signals
-    //==========================================================================
-    logic sda_in;
-
-    // LED Slave signals
-    logic sda_out_led, sda_oe_led;
-
-    // FND Slave signals
-    logic sda_out_fnd, sda_oe_fnd;
-
-    // Switch Slave signals
-    logic sda_out_sw, sda_oe_sw;
-
-    //==========================================================================
     // Slave 1: LED Slave (0x55)
     //==========================================================================
     i2c_led_slave u_led_slave (
-        .clk     (clk),
-        .rst_n   (rst_n),
-        .sda_in  (sda_in),
-        .sda_out (sda_out_led),
-        .sda_oe  (sda_oe_led),
-        .scl     (scl),
-        .LED     (LED)
+        .clk   (clk),
+        .rst_n (rst_n),
+        .scl   (scl),
+        .sda   (sda),
+        .LED   (LED),
+        // Debug ports (not connected)
+        .debug_addr_match (),
+        .debug_state      ()
     );
 
     //==========================================================================
     // Slave 2: 7-Segment Display Slave (0x56)
     //==========================================================================
     i2c_fnd_slave u_fnd_slave (
-        .clk     (clk),
-        .rst_n   (rst_n),
-        .sda_in  (sda_in),
-        .sda_out (sda_out_fnd),
-        .sda_oe  (sda_oe_fnd),
-        .scl     (scl),
-        .SEG     (SEG),
-        .AN      (AN)
+        .clk   (clk),
+        .rst_n (rst_n),
+        .scl   (scl),
+        .sda   (sda),
+        .SEG   (SEG),
+        .AN    (AN),
+        // Debug ports (not connected)
+        .debug_addr_match (),
+        .debug_state      ()
     );
 
     //==========================================================================
     // Slave 3: Switch Slave (0x57)
     //==========================================================================
     i2c_switch_slave u_switch_slave (
-        .clk     (clk),
-        .rst_n   (rst_n),
-        .sda_in  (sda_in),
-        .sda_out (sda_out_sw),
-        .sda_oe  (sda_oe_sw),
-        .scl     (scl),
-        .SW      (SW)
+        .clk   (clk),
+        .rst_n (rst_n),
+        .scl   (scl),
+        .sda   (sda),
+        .SW    (SW),
+        // Debug ports (not connected)
+        .debug_addr_match (),
+        .debug_state      ()
     );
-
-    //==========================================================================
-    // Tri-state I2C Bus (PMOD connection)
-    // Wired-AND: Any slave can pull SDA low
-    //==========================================================================
-    logic sda_out_combined, sda_oe_combined;
-
-    assign sda_oe_combined  = sda_oe_led | sda_oe_fnd | sda_oe_sw;
-    assign sda_out_combined = (sda_oe_led ? sda_out_led : 1'b1) &
-                              (sda_oe_fnd ? sda_out_fnd : 1'b1) &
-                              (sda_oe_sw  ? sda_out_sw  : 1'b1);
-
-    assign sda    = sda_oe_combined ? sda_out_combined : 1'bz;
-    assign sda_in = sda;
 
 endmodule
