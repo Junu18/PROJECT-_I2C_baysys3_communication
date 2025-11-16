@@ -152,6 +152,7 @@ module i2c_switch_slave (
         sda_out_next   = sda_out;
         sda_oe_next    = sda_oe;
         addr_match_next = addr_match;
+        received_addr  = 8'h00;  // Default to avoid latch
 
         // Global STOP detection
         if (stop_detected && (state != IDLE)) begin

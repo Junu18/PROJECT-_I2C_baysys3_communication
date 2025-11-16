@@ -158,6 +158,7 @@ module i2c_led_slave (
         sda_oe_next    = sda_oe;
         addr_match_next = addr_match;
         led_reg_next   = led_reg;
+        received_addr  = 8'h00;  // Default to avoid latch
 
         // Global STOP detection
         if (stop_detected && (state != IDLE)) begin
