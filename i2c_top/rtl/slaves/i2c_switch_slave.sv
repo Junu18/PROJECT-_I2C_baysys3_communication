@@ -169,6 +169,7 @@ module i2c_switch_slave (
                     sda_oe_next     = 1'b0;
                     bit_count_next  = 3'd0;
                     addr_match_next = 1'b0;
+                    tx_shift_next   = 8'h00;  // Clear shift register
 
                     if (start_detected) begin
                         // Go directly to RX_DEV_ADDR to avoid missing first bit
@@ -257,10 +258,14 @@ module i2c_switch_slave (
                 // TX_DATA_ACK: Wait for master ACK/NACK
                 //==============================================================
                 TX_DATA_ACK: begin
-                    sda_oe_next = 1'b0;  // Release for master
+                    // Release SDA on falling edge to ensure last bit is stable
+                    if (scl_falling_edge) begin
+                        sda_oe_next = 1'b0;
+                    end
 
                     if (scl_rising_edge) begin
                         // Sample master's ACK (expect NACK for single byte)
+                        sda_oe_next = 1'b0;  // Ensure release
                         state_next = WAIT_STOP;
                     end
                 end
@@ -269,7 +274,8 @@ module i2c_switch_slave (
                 // WAIT_STOP: Wait for STOP
                 //==============================================================
                 WAIT_STOP: begin
-                    sda_oe_next = 1'b0;
+                    sda_oe_next     = 1'b0;
+                    bit_count_next  = 3'd0;  // Ensure clean state
                     // Will return to IDLE on STOP detection
                 end
 
