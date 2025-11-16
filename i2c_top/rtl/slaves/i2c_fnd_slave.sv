@@ -296,7 +296,7 @@ module i2c_fnd_slave (
 
                     if (scl_falling_edge && sda_oe) begin
                         sda_oe_next = 1'b0;
-                        digit_reg_next = {rx_shift[2:0], sda_in};  // Update digit (0-F)
+                        digit_reg_next = rx_shift[3:0];  // rx_shift already has all 8 bits, use lower 4
                         state_next = WAIT_STOP;
                     end
                 end
