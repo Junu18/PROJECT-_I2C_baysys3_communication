@@ -43,10 +43,15 @@ module i2c_system_top (
 );
 
     //==========================================================================
-    // Internal I2C Bus (tri-state)
+    // Internal I2C Bus (tri-state with pull-ups)
     //==========================================================================
     wire sda;   // I2C data line (shared by master + 3 slaves)
     wire scl;   // I2C clock line (driven by master)
+
+    // I2C Pull-up resistors (required for open-drain operation)
+    // In simulation: weak1 pull-up, in hardware: physical 4.7k resistors
+    assign (weak1, weak0) sda = 1'b1;
+    assign (weak1, weak0) scl = 1'b1;
 
     //==========================================================================
     // I2C Master Instance
