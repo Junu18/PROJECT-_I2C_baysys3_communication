@@ -37,9 +37,28 @@ module board_slaves_top (
     //==========================================================================
     logic [7:0] led_out;
 
-    // Assign LED output
+    // Debug signals from slaves
+    logic       debug_addr_match_led;
+    logic [3:0] debug_state_led;
+    logic       debug_addr_match_fnd;
+    logic [3:0] debug_state_fnd;
+    logic       debug_addr_match_sw;
+    logic [3:0] debug_state_sw;
+
+    //==========================================================================
+    // LED Outputs
+    //==========================================================================
+    // LED[7:0]: LED slave output
     assign LED[7:0]  = led_out;
-    assign LED[15:8] = 8'h00;  // Upper LEDs unused
+
+    // LED[15:8]: Debug status (optional)
+    assign LED[8]    = debug_addr_match_led;  // LED slave addressed
+    assign LED[9]    = debug_addr_match_fnd;  // FND slave addressed
+    assign LED[10]   = debug_addr_match_sw;   // Switch slave addressed
+    assign LED[11]   = (debug_state_led != 4'd0);  // LED slave active
+    assign LED[12]   = (debug_state_fnd != 4'd0);  // FND slave active
+    assign LED[13]   = (debug_state_sw != 4'd0);   // Switch slave active
+    assign LED[15:14] = 2'b00;  // Unused
 
     //==========================================================================
     // LED Slave (Address: 0x55)
@@ -50,8 +69,8 @@ module board_slaves_top (
         .scl(scl),
         .sda(sda),
         .LED(led_out),
-        .debug_addr_match(),  // Can route to LED[15] for debug
-        .debug_state()
+        .debug_addr_match(debug_addr_match_led),
+        .debug_state(debug_state_led)
     );
 
     //==========================================================================
@@ -64,8 +83,8 @@ module board_slaves_top (
         .sda(sda),
         .SEG(SEG),
         .AN(AN),
-        .debug_addr_match(),  // Can route to LED[14] for debug
-        .debug_state()
+        .debug_addr_match(debug_addr_match_fnd),
+        .debug_state(debug_state_fnd)
     );
 
     //==========================================================================
@@ -77,8 +96,8 @@ module board_slaves_top (
         .scl(scl),
         .sda(sda),
         .SW(SW[7:0]),
-        .debug_addr_match(),  // Can route to LED[13] for debug
-        .debug_state()
+        .debug_addr_match(debug_addr_match_sw),
+        .debug_state(debug_state_sw)
     );
 
 endmodule

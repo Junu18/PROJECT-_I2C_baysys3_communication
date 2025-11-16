@@ -27,7 +27,7 @@ module board_master_top (
     // Control Interface (from buttons/switches for testing)
     input  logic       btn_start,        // Start transaction
     input  logic [15:0] SW,              // SW[15]: R/W, SW[14:8]: Addr, SW[7:0]: Data
-    output logic [15:0] LED              // LED[7:0]: RX data, LED[8]: busy, LED[9]: done
+    output logic [15:0] LED              // LED outputs (see LED Status Outputs section)
 );
 
     //==========================================================================
@@ -46,6 +46,14 @@ module board_master_top (
     logic [2:0]  btn_sync;
     logic        btn_prev;
     logic        btn_pulse;
+
+    // Debug signals (optional - can route to LEDs for debugging)
+    logic        debug_busy;
+    logic        debug_ack;
+    logic [4:0]  debug_state;
+    logic        debug_scl;
+    logic        debug_sda_out;
+    logic        debug_sda_oe;
 
     //==========================================================================
     // Button Edge Detection (for start signal)
@@ -73,11 +81,17 @@ module board_master_top (
     //==========================================================================
     // LED Status Outputs
     //==========================================================================
-    assign LED[7:0]  = rx_data;
-    assign LED[8]    = busy;
-    assign LED[9]    = done;
-    assign LED[10]   = ack_error;
-    assign LED[15:11] = 5'b00000;
+    assign LED[7:0]  = rx_data;         // Received data from I2C read
+    assign LED[8]    = busy;            // Master busy status
+    assign LED[9]    = done;            // Transaction done pulse
+    assign LED[10]   = ack_error;       // NACK or error
+
+    // Debug outputs (optional - uncomment to use)
+    assign LED[11]   = debug_ack;       // ACK received from slave
+    assign LED[12]   = debug_scl;       // SCL line monitor
+    assign LED[13]   = debug_sda_out;   // SDA output value
+    assign LED[14]   = debug_sda_oe;    // SDA output enable
+    assign LED[15]   = (debug_state != 5'd0); // Non-IDLE state indicator
 
     //==========================================================================
     // I2C Master Instance
@@ -95,12 +109,12 @@ module board_master_top (
         .ack_error(ack_error),
         .sda(sda),
         .scl(scl),
-        .debug_busy(),
-        .debug_ack(),
-        .debug_state(),
-        .debug_scl(),
-        .debug_sda_out(),
-        .debug_sda_oe()
+        .debug_busy(debug_busy),
+        .debug_ack(debug_ack),
+        .debug_state(debug_state),
+        .debug_scl(debug_scl),
+        .debug_sda_out(debug_sda_out),
+        .debug_sda_oe(debug_sda_oe)
     );
 
 endmodule
