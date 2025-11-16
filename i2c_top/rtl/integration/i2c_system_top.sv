@@ -20,15 +20,14 @@ module i2c_system_top (
     input  logic        start,            // Start I2C transaction
     input  logic        rw_bit,           // 0=Write, 1=Read
     input  logic [6:0]  slave_addr,       // 7-bit slave address
-    input  logic [7:0]  tx_data,          // Data to transmit
-    output logic [7:0]  rx_data,          // Received data
+    // tx_data comes from SW, rx_data is internal only
     output logic        busy,             // Transaction in progress
     output logic        done,             // Transaction completed
     output logic        ack_error,        // NACK or error
 
     // External I/O
-    input  logic [7:0]  SW,               // Switch input
-    output logic [7:0]  LED,              // LED output
+    input  logic [7:0]  SW,               // Switch input (also master tx_data)
+    output logic [7:0]  LED,              // LED output (from LED slave)
     output logic [6:0]  SEG,              // 7-segment cathodes
     output logic [3:0]  AN,               // 7-segment anodes
 
@@ -50,6 +49,11 @@ module i2c_system_top (
     tri1 scl;   // I2C clock line (driven by master)
 
     //==========================================================================
+    // Internal signals
+    //==========================================================================
+    logic [7:0] rx_data_internal;  // Master receive data (internal only)
+
+    //==========================================================================
     // I2C Master Instance
     //==========================================================================
     i2c_master master (
@@ -58,8 +62,8 @@ module i2c_system_top (
         .start(start),
         .rw_bit(rw_bit),
         .slave_addr(slave_addr),
-        .tx_data(tx_data),
-        .rx_data(rx_data),
+        .tx_data(SW),                    // Use SW switches as tx_data source
+        .rx_data(rx_data_internal),      // Internal rx_data (not exposed to pins)
         .busy(busy),
         .done(done),
         .ack_error(ack_error),
