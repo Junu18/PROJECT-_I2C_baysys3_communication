@@ -11,7 +11,7 @@
 set_property -dict { PACKAGE_PIN W5   IOSTANDARD LVCMOS33 } [get_ports clk]
 create_clock -add -name sys_clk_pin -period 10.00 -waveform {0 5} [get_ports clk]
 
-## Switches
+## Switches (SW[7:0] also used as tx_data input)
 set_property -dict { PACKAGE_PIN V17   IOSTANDARD LVCMOS33 } [get_ports {SW[0]}]
 set_property -dict { PACKAGE_PIN V16   IOSTANDARD LVCMOS33 } [get_ports {SW[1]}]
 set_property -dict { PACKAGE_PIN W16   IOSTANDARD LVCMOS33 } [get_ports {SW[2]}]
@@ -20,6 +20,8 @@ set_property -dict { PACKAGE_PIN W15   IOSTANDARD LVCMOS33 } [get_ports {SW[4]}]
 set_property -dict { PACKAGE_PIN V15   IOSTANDARD LVCMOS33 } [get_ports {SW[5]}]
 set_property -dict { PACKAGE_PIN W14   IOSTANDARD LVCMOS33 } [get_ports {SW[6]}]
 set_property -dict { PACKAGE_PIN W13   IOSTANDARD LVCMOS33 } [get_ports {SW[7]}]
+
+## I2C Master Control
 set_property -dict { PACKAGE_PIN V2    IOSTANDARD LVCMOS33 } [get_ports {slave_addr[0]}]
 set_property -dict { PACKAGE_PIN T3    IOSTANDARD LVCMOS33 } [get_ports {slave_addr[1]}]
 set_property -dict { PACKAGE_PIN T2    IOSTANDARD LVCMOS33 } [get_ports {slave_addr[2]}]
@@ -29,17 +31,10 @@ set_property -dict { PACKAGE_PIN U1    IOSTANDARD LVCMOS33 } [get_ports {slave_a
 set_property -dict { PACKAGE_PIN T1    IOSTANDARD LVCMOS33 } [get_ports {slave_addr[6]}]
 set_property -dict { PACKAGE_PIN R2    IOSTANDARD LVCMOS33 } [get_ports rw_bit]
 
-## TX Data (same as SW for convenience)
-set_property -dict { PACKAGE_PIN V17   IOSTANDARD LVCMOS33 } [get_ports {tx_data[0]}]
-set_property -dict { PACKAGE_PIN V16   IOSTANDARD LVCMOS33 } [get_ports {tx_data[1]}]
-set_property -dict { PACKAGE_PIN W16   IOSTANDARD LVCMOS33 } [get_ports {tx_data[2]}]
-set_property -dict { PACKAGE_PIN W17   IOSTANDARD LVCMOS33 } [get_ports {tx_data[3]}]
-set_property -dict { PACKAGE_PIN W15   IOSTANDARD LVCMOS33 } [get_ports {tx_data[4]}]
-set_property -dict { PACKAGE_PIN V15   IOSTANDARD LVCMOS33 } [get_ports {tx_data[5]}]
-set_property -dict { PACKAGE_PIN W14   IOSTANDARD LVCMOS33 } [get_ports {tx_data[6]}]
-set_property -dict { PACKAGE_PIN W13   IOSTANDARD LVCMOS33 } [get_ports {tx_data[7]}]
+## TX Data - In i2c_system_top, connect tx_data = SW internally
+## No separate pins needed (ports will be tied in RTL)
 
-## LEDs
+## LEDs (LED[7:0] also used as rx_data output)
 set_property -dict { PACKAGE_PIN U16   IOSTANDARD LVCMOS33 } [get_ports {LED[0]}]
 set_property -dict { PACKAGE_PIN E19   IOSTANDARD LVCMOS33 } [get_ports {LED[1]}]
 set_property -dict { PACKAGE_PIN U19   IOSTANDARD LVCMOS33 } [get_ports {LED[2]}]
@@ -51,21 +46,21 @@ set_property -dict { PACKAGE_PIN V14   IOSTANDARD LVCMOS33 } [get_ports {LED[7]}
 set_property -dict { PACKAGE_PIN V13   IOSTANDARD LVCMOS33 } [get_ports busy]
 set_property -dict { PACKAGE_PIN V3    IOSTANDARD LVCMOS33 } [get_ports done]
 set_property -dict { PACKAGE_PIN W3    IOSTANDARD LVCMOS33 } [get_ports ack_error]
-set_property -dict { PACKAGE_PIN U3    IOSTANDARD LVCMOS33 } [get_ports debug_addr_match_led]
-set_property -dict { PACKAGE_PIN P3    IOSTANDARD LVCMOS33 } [get_ports debug_addr_match_fnd]
-set_property -dict { PACKAGE_PIN N3    IOSTANDARD LVCMOS33 } [get_ports debug_addr_match_sw]
+
+## Debug signals (commented out to save pins)
+#set_property -dict { PACKAGE_PIN U3    IOSTANDARD LVCMOS33 } [get_ports debug_addr_match_led]
+#set_property -dict { PACKAGE_PIN P3    IOSTANDARD LVCMOS33 } [get_ports debug_addr_match_fnd]
+#set_property -dict { PACKAGE_PIN N3    IOSTANDARD LVCMOS33 } [get_ports debug_addr_match_sw]
+#set_property -dict { PACKAGE_PIN L1    IOSTANDARD LVCMOS33 } [get_ports {debug_master_state[0]}]
+#set_property -dict { PACKAGE_PIN P1    IOSTANDARD LVCMOS33 } [get_ports {debug_master_state[1]}]
+#set_property -dict { PACKAGE_PIN N3    IOSTANDARD LVCMOS33 } [get_ports {debug_master_state[2]}]
+#set_property -dict { PACKAGE_PIN P3    IOSTANDARD LVCMOS33 } [get_ports {debug_master_state[3]}]
+#set_property -dict { PACKAGE_PIN U3    IOSTANDARD LVCMOS33 } [get_ports {debug_master_state[4]}]
 #set_property -dict { PACKAGE_PIN P1    IOSTANDARD LVCMOS33 } [get_ports {led[14]}]
 #set_property -dict { PACKAGE_PIN L1    IOSTANDARD LVCMOS33 } [get_ports {led[15]}]
 
-## RX Data (same as LED for display)
-set_property -dict { PACKAGE_PIN U16   IOSTANDARD LVCMOS33 } [get_ports {rx_data[0]}]
-set_property -dict { PACKAGE_PIN E19   IOSTANDARD LVCMOS33 } [get_ports {rx_data[1]}]
-set_property -dict { PACKAGE_PIN U19   IOSTANDARD LVCMOS33 } [get_ports {rx_data[2]}]
-set_property -dict { PACKAGE_PIN V19   IOSTANDARD LVCMOS33 } [get_ports {rx_data[3]}]
-set_property -dict { PACKAGE_PIN W18   IOSTANDARD LVCMOS33 } [get_ports {rx_data[4]}]
-set_property -dict { PACKAGE_PIN U15   IOSTANDARD LVCMOS33 } [get_ports {rx_data[5]}]
-set_property -dict { PACKAGE_PIN U14   IOSTANDARD LVCMOS33 } [get_ports {rx_data[6]}]
-set_property -dict { PACKAGE_PIN V14   IOSTANDARD LVCMOS33 } [get_ports {rx_data[7]}]
+## RX Data - In i2c_system_top, connect LED = rx_data internally
+## No separate pins needed (ports will be tied in RTL)
 
 ##7 Segment Display
 set_property -dict { PACKAGE_PIN W7   IOSTANDARD LVCMOS33 } [get_ports {SEG[0]}]
