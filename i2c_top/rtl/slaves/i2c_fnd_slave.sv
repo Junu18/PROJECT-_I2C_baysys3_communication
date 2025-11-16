@@ -206,17 +206,7 @@ module i2c_fnd_slave (
                     addr_match_next = 1'b0;
 
                     if (start_detected) begin
-                        state_next = START;
-                    end
-                end
-
-                //==============================================================
-                // START: Prepare to receive device address
-                //==============================================================
-                START: begin
-                    sda_oe_next = 1'b0;
-
-                    if (scl_rising_edge) begin
+                        // Go directly to RX_DEV_ADDR to avoid missing first bit
                         state_next = RX_DEV_ADDR;
                     end
                 end
