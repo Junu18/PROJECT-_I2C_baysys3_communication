@@ -228,7 +228,9 @@ module i2c_switch_slave (
                         end
 
                         if (scl_falling_edge && sda_oe) begin
-                            sda_oe_next = 1'b0;
+                            // Immediately drive first data bit on SDA
+                            sda_oe_next = 1'b1;
+                            sda_out_next = SW[7];  // First bit (MSB)
                             tx_shift_next = SW;  // Load switch value
                             state_next = TX_DATA;  // Go to transmit
                         end
