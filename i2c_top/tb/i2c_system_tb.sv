@@ -93,8 +93,7 @@ module i2c_system_tb;
     initial begin
         $display("========================================");
         $display("I2C Multi-Slave System Testbench");
-        $display("Testing Master + 3 Slaves");
-        $display("========================================");
+        $display("========================================\n");
 
         test_pass = 0;
         test_fail = 0;
@@ -114,123 +113,114 @@ module i2c_system_tb;
         //======================================================================
         // Test 1: Write to LED Slave (0x55)
         //======================================================================
-        $display("\n[%0t] === Test 1: Write 0xFF to LED Slave (0x55) ===", $time);
+        $display("Test 1: Write 0xFF to LED (0x55)");
         master_write(ADDR_LED, 8'hFF);
         repeat(100) @(posedge clk);
 
         if (LED == 8'hFF && !ack_error) begin
-            $display("  ✓ LED = 0xFF, No ACK error");
+            $display("  ✓ PASS\n");
             test_pass++;
         end else begin
-            $display("  ✗ LED = 0x%02h (expected 0xFF), ACK error = %b", LED, ack_error);
+            $display("  ✗ FAIL: LED=0x%02h (expected 0xFF), ACK error=%b\n", LED, ack_error);
             test_fail++;
         end
 
-        repeat(200) @(posedge clk);
+        repeat(50) @(posedge clk);
 
         //======================================================================
         // Test 2: Write to FND Slave (0x56)
         //======================================================================
-        $display("\n[%0t] === Test 2: Write 0x05 to FND Slave (0x56) ===", $time);
+        $display("Test 2: Write 0x05 to FND (0x56)");
         master_write(ADDR_FND, 8'h05);
         repeat(100) @(posedge clk);
 
         if (SEG == 7'b0010010 && !ack_error) begin
-            $display("  ✓ FND shows '5' (SEG = 7'b0010010), No ACK error");
+            $display("  ✓ PASS\n");
             test_pass++;
         end else begin
-            $display("  ✗ SEG = 7'b%07b (expected 7'b0010010), ACK error = %b", SEG, ack_error);
+            $display("  ✗ FAIL: SEG=7'b%07b (expected 7'b0010010), ACK error=%b\n", SEG, ack_error);
             test_fail++;
         end
 
-        repeat(200) @(posedge clk);
+        repeat(50) @(posedge clk);
 
         //======================================================================
         // Test 3: Read from Switch Slave (0x57)
         //======================================================================
-        $display("\n[%0t] === Test 3: Read from Switch Slave (0x57) ===", $time);
+        $display("Test 3: Read from Switch (0x57)");
         SW = 8'hCD;
         master_read(ADDR_SW);
         repeat(100) @(posedge clk);
 
         if (rx_data == 8'hCD && !ack_error) begin
-            $display("  ✓ Read SW = 0xCD, No ACK error");
+            $display("  ✓ PASS\n");
             test_pass++;
         end else begin
-            $display("  ✗ Read data = 0x%02h (expected 0xCD), ACK error = %b", rx_data, ack_error);
+            $display("  ✗ FAIL: rx_data=0x%02h (expected 0xCD), ACK error=%b\n", rx_data, ack_error);
             test_fail++;
         end
 
-        repeat(200) @(posedge clk);
+        repeat(50) @(posedge clk);
 
         //======================================================================
         // Test 4: Sequential Operations
         //======================================================================
-        $display("\n[%0t] === Test 4: Sequential Operations ===", $time);
+        $display("Test 4: Sequential Operations");
 
-        // Write to LED
         master_write(ADDR_LED, 8'hAA);
         repeat(50) @(posedge clk);
-
-        // Write to FND
         master_write(ADDR_FND, 8'h0A);
         repeat(50) @(posedge clk);
-
-        // Read from Switch
         SW = 8'h12;
         master_read(ADDR_SW);
         repeat(50) @(posedge clk);
 
         if (LED == 8'hAA && SEG == 7'b0001000 && rx_data == 8'h12 && !ack_error) begin
-            $display("  ✓ All sequential operations successful");
-            $display("    LED = 0xAA, FND shows 'A', SW read = 0x12");
+            $display("  ✓ PASS\n");
             test_pass++;
         end else begin
-            $display("  ✗ Sequential operation error");
-            $display("    LED = 0x%02h (expected 0xAA)", LED);
-            $display("    SEG = 7'b%07b (expected 7'b0001000)", SEG);
-            $display("    SW = 0x%02h (expected 0x12)", rx_data);
+            $display("  ✗ FAIL: LED=0x%02h, SEG=7'b%07b, SW=0x%02h, ACK=%b\n", LED, SEG, rx_data, ack_error);
             test_fail++;
         end
 
-        repeat(200) @(posedge clk);
+        repeat(50) @(posedge clk);
 
         //======================================================================
         // Test 5: LED Pattern Test
         //======================================================================
-        $display("\n[%0t] === Test 5: LED Pattern Test ===", $time);
+        $display("Test 5: LED Pattern Test");
         master_write(ADDR_LED, 8'b10101010);
         repeat(50) @(posedge clk);
         master_write(ADDR_LED, 8'b01010101);
         repeat(50) @(posedge clk);
 
         if (LED == 8'b01010101 && !ack_error) begin
-            $display("  ✓ LED pattern updated correctly");
+            $display("  ✓ PASS\n");
             test_pass++;
         end else begin
-            $display("  ✗ LED = 0b%08b (expected 0b01010101)", LED);
+            $display("  ✗ FAIL: LED=0b%08b (expected 0b01010101)\n", LED);
             test_fail++;
         end
 
-        repeat(200) @(posedge clk);
+        repeat(50) @(posedge clk);
 
         //======================================================================
         // Test 6: FND Counter Test (0-F)
         //======================================================================
-        $display("\n[%0t] === Test 6: FND Counter (0-F) ===", $time);
+        $display("Test 6: FND Counter (0-F)");
         for (int i = 0; i < 16; i++) begin
             master_write(ADDR_FND, i[7:0]);
             repeat(30) @(posedge clk);
         end
-        $display("  ✓ FND counted 0-F");
+        $display("  ✓ PASS\n");
         test_pass++;
 
-        repeat(200) @(posedge clk);
+        repeat(50) @(posedge clk);
 
         //======================================================================
         // Test 7: Switch → LED Copy
         //======================================================================
-        $display("\n[%0t] === Test 7: Switch → LED Copy ===", $time);
+        $display("Test 7: Switch → LED Copy");
         SW = 8'h3C;
         master_read(ADDR_SW);
         repeat(50) @(posedge clk);
@@ -238,64 +228,56 @@ module i2c_system_tb;
         repeat(50) @(posedge clk);
 
         if (LED == 8'h3C && !ack_error) begin
-            $display("  ✓ Switch value copied to LED (0x3C)");
+            $display("  ✓ PASS\n");
             test_pass++;
         end else begin
-            $display("  ✗ LED = 0x%02h (expected 0x3C)", LED);
+            $display("  ✗ FAIL: LED=0x%02h (expected 0x3C)\n", LED);
             test_fail++;
         end
 
-        repeat(200) @(posedge clk);
+        repeat(50) @(posedge clk);
 
         //======================================================================
         // Test 8: Invalid Address Test
         //======================================================================
-        $display("\n[%0t] === Test 8: Invalid Address (0x99) ===", $time);
+        $display("Test 8: Invalid Address (0x99)");
         master_write(7'h99, 8'hFF);
         repeat(100) @(posedge clk);
 
         if (ack_error) begin
-            $display("  ✓ ACK error detected for invalid address");
+            $display("  ✓ PASS\n");
             test_pass++;
         end else begin
-            $display("  ✗ ACK error NOT detected");
+            $display("  ✗ FAIL: ACK error NOT detected\n");
             test_fail++;
         end
 
-        repeat(200) @(posedge clk);
+        repeat(50) @(posedge clk);
 
         //======================================================================
         // Summary
         //======================================================================
-        $display("\n========================================");
-        $display("Test Summary:");
-        $display("  PASSED: %0d", test_pass);
-        $display("  FAILED: %0d", test_fail);
+        $display("========================================");
+        $display("FINAL RESULTS:");
+        $display("  PASSED: %0d/8", test_pass);
+        $display("  FAILED: %0d/8", test_fail);
         $display("========================================");
 
         if (test_fail == 0) begin
-            $display("✓ ALL TESTS PASSED!");
-            $display("\nSystem demonstrates:");
-            $display("  - I2C multi-device bus");
-            $display("  - Address-based slave selection");
-            $display("  - Write operations (LED, FND)");
-            $display("  - Read operations (Switch)");
-            $display("  - Error detection (invalid address)");
+            $display("✓ ALL TESTS PASSED!\n");
         end else begin
-            $display("✗ SOME TESTS FAILED!");
+            $display("✗ SOME TESTS FAILED!\n");
         end
 
         $finish;
     end
 
     //==========================================================================
-    // Master Control Tasks
+    // Master Control Tasks (Quiet Mode)
     //==========================================================================
 
     task master_write(input [6:0] addr, input [7:0] data);
         begin
-            $display("  Master Write: Addr=0x%02h, Data=0x%02h", addr, data);
-
             slave_addr = addr;
             tx_data = data;
             rw_bit = 1'b0;  // Write
@@ -308,17 +290,11 @@ module i2c_system_tb;
             // Wait for done
             wait(done == 1);
             @(posedge clk);
-
-            if (ack_error) begin
-                $display("  ⚠ ACK error during write");
-            end
         end
     endtask
 
     task master_read(input [6:0] addr);
         begin
-            $display("  Master Read: Addr=0x%02h", addr);
-
             slave_addr = addr;
             rw_bit = 1'b1;  // Read
 
@@ -330,12 +306,6 @@ module i2c_system_tb;
             // Wait for done
             wait(done == 1);
             @(posedge clk);
-
-            if (ack_error) begin
-                $display("  ⚠ ACK error during read");
-            end else begin
-                $display("  Read data: 0x%02h", rx_data);
-            end
         end
     endtask
 
@@ -354,18 +324,6 @@ module i2c_system_tb;
         #100000000;
         $display("\n✗ ERROR: Simulation timeout!");
         $finish;
-    end
-
-    //==========================================================================
-    // Debug Monitor (optional)
-    //==========================================================================
-    initial begin
-        forever begin
-            @(posedge clk);
-            if (debug_addr_match_led) $display("  [DEBUG] LED Slave addressed");
-            if (debug_addr_match_fnd) $display("  [DEBUG] FND Slave addressed");
-            if (debug_addr_match_sw)  $display("  [DEBUG] Switch Slave addressed");
-        end
     end
 
 endmodule
