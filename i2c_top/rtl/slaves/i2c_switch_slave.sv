@@ -222,7 +222,8 @@ module i2c_switch_slave (
                             // Immediately drive first data bit on SDA
                             sda_oe_next = 1'b1;
                             sda_out_next = SW[7];  // First bit (MSB)
-                            tx_shift_next = SW;  // Load switch value
+                            tx_shift_next = {SW[6:0], 1'b0};  // Pre-shift for next bit
+                            bit_count_next = 3'd1;  // Already sent first bit
                             state_next = TX_DATA;  // Go to transmit
                         end
                     end else begin
