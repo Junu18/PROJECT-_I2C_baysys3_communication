@@ -267,7 +267,7 @@ module i2c_led_slave (
 
                     if (scl_falling_edge && sda_oe) begin
                         sda_oe_next = 1'b0;
-                        led_reg_next = {rx_shift[6:0], sda_in};  // Update LED!
+                        led_reg_next = rx_shift[7:0];  // rx_shift already has all 8 bits
                         state_next = WAIT_STOP;
                     end
                 end
