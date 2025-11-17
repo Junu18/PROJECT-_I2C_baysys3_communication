@@ -16,17 +16,27 @@
 
 #include "i2c_master.h"
 #include "xil_printf.h"
-#include "xgpio.h"
+#include "xil_io.h"
 #include "sleep.h"
 
 //==============================================================================
-// GPIO Configuration
+// GPIO Configuration (Direct Register Access)
 //==============================================================================
-#define GPIO_DEVICE_ID  XPAR_GPIO_0_DEVICE_ID
-#define GPIO_CHANNEL_1  1  // Input channel (switches)
-#define GPIO_CHANNEL_2  2  // Output channel (LEDs)
+#ifndef XPAR_GPIO_0_BASEADDR
+#define GPIO_BASEADDR       0x40000000  // Default - CHECK Address Editor!
+#else
+#define GPIO_BASEADDR       XPAR_GPIO_0_BASEADDR
+#endif
 
-XGpio GpioInstance;
+// AXI GPIO Register Offsets
+#define GPIO_DATA_OFFSET    0x00  // Channel 1 Data
+#define GPIO_TRI_OFFSET     0x04  // Channel 1 Tri-state (1=input, 0=output)
+#define GPIO2_DATA_OFFSET   0x08  // Channel 2 Data
+#define GPIO2_TRI_OFFSET    0x0C  // Channel 2 Tri-state
+
+// Helper macros
+#define GPIO_READ_SWITCH()  Xil_In32(GPIO_BASEADDR + GPIO_DATA_OFFSET)
+#define GPIO_WRITE_LED(val) Xil_Out32(GPIO_BASEADDR + GPIO2_DATA_OFFSET, val)
 
 //==============================================================================
 // Demo Functions
@@ -168,7 +178,6 @@ void demo_invalid_address(void)
 
 int main(void)
 {
-    int status;
     u32 switch_value;
     u32 prev_switch = 0;
 
@@ -182,18 +191,13 @@ int main(void)
     xil_printf("  - Protocol: I2C, 100 kHz SCL\r\n");
     xil_printf("========================================\r\n\r\n");
 
-    // Initialize GPIO
-    status = XGpio_Initialize(&GpioInstance, GPIO_DEVICE_ID);
-    if (status != XST_SUCCESS) {
-        xil_printf("ERROR: GPIO initialization failed!\r\n");
-        return -1;
-    }
+    // Initialize GPIO (Direct register access)
+    // Set Channel 1 (Switches) as input
+    Xil_Out32(GPIO_BASEADDR + GPIO_TRI_OFFSET, 0xFF);
+    // Set Channel 2 (LEDs) as output
+    Xil_Out32(GPIO_BASEADDR + GPIO2_TRI_OFFSET, 0x00);
 
-    // Set GPIO direction (Channel 1 = Input, Channel 2 = Output)
-    XGpio_SetDataDirection(&GpioInstance, GPIO_CHANNEL_1, 0xFF);  // All input
-    XGpio_SetDataDirection(&GpioInstance, GPIO_CHANNEL_2, 0x00);  // All output
-
-    xil_printf("GPIO initialized successfully!\r\n");
+    xil_printf("GPIO initialized at 0x%08X\r\n", GPIO_BASEADDR);
 
     // Initialize I2C
     i2c_init();
@@ -213,10 +217,10 @@ int main(void)
     // Main loop - wait for switch press
     while (1) {
         // Read switch values
-        switch_value = XGpio_DiscreteRead(&GpioInstance, GPIO_CHANNEL_1);
+        switch_value = GPIO_READ_SWITCH();
 
         // Display switch value on LEDs
-        XGpio_DiscreteWrite(&GpioInstance, GPIO_CHANNEL_2, switch_value);
+        GPIO_WRITE_LED(switch_value);
 
         // Detect rising edge (switch turned on)
         if (switch_value != prev_switch) {
