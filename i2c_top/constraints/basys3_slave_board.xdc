@@ -18,8 +18,8 @@
 set_property -dict { PACKAGE_PIN W5   IOSTANDARD LVCMOS33 } [get_ports clk]
 create_clock -add -name sys_clk_pin -period 10.00 -waveform {0 5} [get_ports clk]
 
-## Reset Button (Center button)
-set_property -dict { PACKAGE_PIN U18   IOSTANDARD LVCMOS33 } [get_ports rst_n]
+## Reset Button (Center button - Active high)
+set_property -dict { PACKAGE_PIN U18   IOSTANDARD LVCMOS33 } [get_ports rst]
 
 ##==============================================================================
 ## Switches → SW[7:0] (Input to Switch Slave 0x57)

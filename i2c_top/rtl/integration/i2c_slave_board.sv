@@ -6,7 +6,7 @@
 
 module i2c_slave_board (
     input  logic        clk,
-    input  logic        rst_n,
+    input  logic        rst,
 
     // Switch inputs (for Switch Slave)
     input  logic [7:0]  SW,
@@ -28,7 +28,7 @@ module i2c_slave_board (
     //==========================================================================
     i2c_led_slave u_led_slave (
         .clk   (clk),
-        .rst_n (rst_n),
+        .rst   (rst),
         .scl   (scl),
         .sda   (sda),
         .LED   (LED),
@@ -42,7 +42,7 @@ module i2c_slave_board (
     //==========================================================================
     i2c_fnd_slave u_fnd_slave (
         .clk   (clk),
-        .rst_n (rst_n),
+        .rst   (rst),
         .scl   (scl),
         .sda   (sda),
         .SEG   (SEG),
@@ -57,7 +57,7 @@ module i2c_slave_board (
     //==========================================================================
     i2c_switch_slave u_switch_slave (
         .clk   (clk),
-        .rst_n (rst_n),
+        .rst   (rst),
         .scl   (scl),
         .sda   (sda),
         .SW    (SW),

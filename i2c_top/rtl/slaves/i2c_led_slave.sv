@@ -16,7 +16,7 @@
 module i2c_led_slave (
     // System
     input  logic       clk,              // 100 MHz system clock
-    input  logic       rst_n,            // Active-low reset
+    input  logic       rst,              // Active-high reset
 
     // I2C Bus
     input  logic       scl,              // I2C clock from master
@@ -97,8 +97,8 @@ module i2c_led_slave (
     //==========================================================================
     // SCL/SDA Synchronization
     //==========================================================================
-    always_ff @(posedge clk or negedge rst_n) begin
-        if (!rst_n) begin
+    always_ff @(posedge clk or posedge rst) begin
+        if (rst) begin
             scl_sync <= 3'b111;
             sda_sync <= 3'b111;
             sda_prev <= 1'b1;
@@ -123,8 +123,8 @@ module i2c_led_slave (
     //==========================================================================
     // Sequential Logic
     //==========================================================================
-    always_ff @(posedge clk or negedge rst_n) begin
-        if (!rst_n) begin
+    always_ff @(posedge clk or posedge rst) begin
+        if (rst) begin
             state        <= IDLE;
             dev_addr_reg <= 8'd0;
             rx_shift     <= 8'd0;
