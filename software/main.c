@@ -6,11 +6,27 @@
  *   - LED Slave (0x55): Write data to control 8 LEDs
  *   - FND Slave (0x56): Write hex digit to 7-segment display
  *   - Switch Slave (0x57): Read 8 switch values
+ *
+ * Control via Switches:
+ *   - SW[0] = 1: Run LED demo
+ *   - SW[1] = 1: Run FND demo
+ *   - SW[2] = 1: Run Switch demo
+ *   - SW[3] = 1: Run Interactive demo
  */
 
 #include "i2c_master.h"
 #include "xil_printf.h"
+#include "xgpio.h"
 #include "sleep.h"
+
+//==============================================================================
+// GPIO Configuration
+//==============================================================================
+#define GPIO_DEVICE_ID  XPAR_GPIO_0_DEVICE_ID
+#define GPIO_CHANNEL_1  1  // Input channel (switches)
+#define GPIO_CHANNEL_2  2  // Output channel (LEDs)
+
+XGpio GpioInstance;
 
 //==============================================================================
 // Demo Functions
@@ -152,6 +168,10 @@ void demo_invalid_address(void)
 
 int main(void)
 {
+    int status;
+    u32 switch_value;
+    u32 prev_switch = 0;
+
     xil_printf("\r\n");
     xil_printf("========================================\r\n");
     xil_printf("  I2C Master-Slave Demo for Basys3\r\n");
@@ -162,19 +182,79 @@ int main(void)
     xil_printf("  - Protocol: I2C, 100 kHz SCL\r\n");
     xil_printf("========================================\r\n\r\n");
 
+    // Initialize GPIO
+    status = XGpio_Initialize(&GpioInstance, GPIO_DEVICE_ID);
+    if (status != XST_SUCCESS) {
+        xil_printf("ERROR: GPIO initialization failed!\r\n");
+        return -1;
+    }
+
+    // Set GPIO direction (Channel 1 = Input, Channel 2 = Output)
+    XGpio_SetDataDirection(&GpioInstance, GPIO_CHANNEL_1, 0xFF);  // All input
+    XGpio_SetDataDirection(&GpioInstance, GPIO_CHANNEL_2, 0x00);  // All output
+
+    xil_printf("GPIO initialized successfully!\r\n");
+
     // Initialize I2C
     i2c_init();
 
-    // Run demos
-    demo_led_slave();
-    demo_fnd_slave();
-    demo_switch_slave();
-    demo_interactive();
-    demo_invalid_address();
-
-    xil_printf("\r\n========================================\r\n");
-    xil_printf("  Demo Complete!\r\n");
+    xil_printf("\r\n");
     xil_printf("========================================\r\n");
+    xil_printf("  Waiting for switch input...\r\n");
+    xil_printf("========================================\r\n");
+    xil_printf("Control:\r\n");
+    xil_printf("  SW[0] = 1 : LED Demo\r\n");
+    xil_printf("  SW[1] = 1 : FND Demo\r\n");
+    xil_printf("  SW[2] = 1 : Switch Read Demo\r\n");
+    xil_printf("  SW[3] = 1 : Interactive Demo\r\n");
+    xil_printf("  SW[4] = 1 : Invalid Address Test\r\n");
+    xil_printf("========================================\r\n\r\n");
+
+    // Main loop - wait for switch press
+    while (1) {
+        // Read switch values
+        switch_value = XGpio_DiscreteRead(&GpioInstance, GPIO_CHANNEL_1);
+
+        // Display switch value on LEDs
+        XGpio_DiscreteWrite(&GpioInstance, GPIO_CHANNEL_2, switch_value);
+
+        // Detect rising edge (switch turned on)
+        if (switch_value != prev_switch) {
+            if ((switch_value & 0x01) && !(prev_switch & 0x01)) {
+                // SW[0] pressed - LED Demo
+                demo_led_slave();
+                xil_printf("\r\nWaiting for next command...\r\n\r\n");
+            }
+
+            if ((switch_value & 0x02) && !(prev_switch & 0x02)) {
+                // SW[1] pressed - FND Demo
+                demo_fnd_slave();
+                xil_printf("\r\nWaiting for next command...\r\n\r\n");
+            }
+
+            if ((switch_value & 0x04) && !(prev_switch & 0x04)) {
+                // SW[2] pressed - Switch Demo
+                demo_switch_slave();
+                xil_printf("\r\nWaiting for next command...\r\n\r\n");
+            }
+
+            if ((switch_value & 0x08) && !(prev_switch & 0x08)) {
+                // SW[3] pressed - Interactive Demo
+                demo_interactive();
+                xil_printf("\r\nWaiting for next command...\r\n\r\n");
+            }
+
+            if ((switch_value & 0x10) && !(prev_switch & 0x10)) {
+                // SW[4] pressed - Invalid Address Test
+                demo_invalid_address();
+                xil_printf("\r\nWaiting for next command...\r\n\r\n");
+            }
+
+            prev_switch = switch_value;
+        }
+
+        usleep(50000);  // 50ms delay
+    }
 
     return 0;
 }
